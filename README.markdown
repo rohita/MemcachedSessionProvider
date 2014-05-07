@@ -16,7 +16,7 @@ M2, in case M2 goes down.
 ```
 <M1>     <M2>
  S1		  S2
- bak:S2	  bak:S1
+bak:S2	 bak:S1
 ```
 This is the same way the [Memcached session manager for Tomcat](https://code.google.com/p/memcached-session-manager/) is implemented. 
 
@@ -25,8 +25,10 @@ Note that if only 1 memcached node is configured then there is no backup.
 ### No session locking
 [Session locking in ASP.NET](http://msdn.microsoft.com/en-us/library/ms178587.aspx) can cause a few 
 [performance problems](http://stackoverflow.com/questions/3629709/i-just-discovered-why-all-asp-net-websites-are-slow-and-i-am-trying-to-work-out). 
-This custom implementation of Session provider does not lock any Session. It based on the 
-[sample provided by Microsoft](http://msdn.microsoft.com/en-us/library/ms178588.aspx).
+This custom implementation of Session provider does not lock any Session. If your application is structured in a reasonable way, 
+this should not a problem. If you actually need locked, consistent data as part of the session, you should specifically implement a 
+lock/concurrency check on your own, or use a different Memcached provider (see [here](https://github.com/enyim/memcached-providers) 
+and [here](http://memcachedproviders.codeplex.com/)).
 
 ## Requirements
 You'll need .NET Framework 3.5 or later to use the precompiled binaries. To build client, you'll need Visual Studio 2012.
@@ -81,4 +83,5 @@ Also make the following change in web.config to use the custom Session State pro
 
 </configuration>
 ```
-
+## Reference
+This implementation based on the [sample provided by Microsoft](http://msdn.microsoft.com/en-us/library/ms178588.aspx).
