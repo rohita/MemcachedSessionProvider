@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EAF584A0-A5F1-47BF-BC54-004C3978ACE8}"
+	ProjectSection(SolutionItems) = preProject
+		License.txt = License.txt
+		README.markdown = README.markdown
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MemcachedSessionProvider", "MemcachedSessionProvider\MemcachedSessionProvider.csproj", "{B062D12C-EFB7-4CB5-B560-FB2387468E82}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MemcachedSessionProvider.Tests", "MemcachedSessionProvider.Tests\MemcachedSessionProvider.Tests.csproj", "{B1948D1F-D924-4E91-AAEA-41D47EF602D0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B062D12C-EFB7-4CB5-B560-FB2387468E82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B062D12C-EFB7-4CB5-B560-FB2387468E82}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B062D12C-EFB7-4CB5-B560-FB2387468E82}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B062D12C-EFB7-4CB5-B560-FB2387468E82}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1948D1F-D924-4E91-AAEA-41D47EF602D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1948D1F-D924-4E91-AAEA-41D47EF602D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1948D1F-D924-4E91-AAEA-41D47EF602D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1948D1F-D924-4E91-AAEA-41D47EF602D0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
