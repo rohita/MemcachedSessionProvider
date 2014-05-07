@@ -8,11 +8,11 @@ Features:
 * No session locking per request
 
 ### Handling node failures
-In production environment with 2 or more memcached nodes, Sessions are distributed equally across the pool of memcached nodes. 
-Also, for every session stored on node M[i] a backup copy of that session will be stored on the next node M[i+1]. For example, in 
-a pool of 2 memcached nodes M1 and M2, if a session `S1` gets stored on memcached node M1, the backup session `bak:S1` is stored 
-on node M2. If node M1 goes down, session is not lost. It will be retrived from the M2 node. Similarly, M1 acts as backup node for
-M2, in case M2 goes down. 
+In a pool of 2 or more memcached nodes, sessions are distributed equally across all the memcached nodes. 
+Also, for every session stored on node `M[i]` a backup copy of that session is stored on the next node `M[i+1]`. For example, in 
+a pool of 2 memcached nodes `<M1>` and `<M2>`, if a session `S1` gets stored on memcached node `<M1>`, the backup session `bak:S1` is stored 
+on node `<M2>`. If node `<M1>` goes down, session is not lost. It will be retrived from the `<M2>` node. Similarly, `<M1>` acts as backup node for
+`<M2>`, in case `<M2>` goes down. 
 ```
 <M1>     <M2>
  S1		  S2
@@ -38,7 +38,7 @@ In your web project, include the assembly via [NuGet Package](https://www.nuget.
 
 ## Web.config
 This library uses the [Enyim Memcached client](https://github.com/enyim/EnyimMemcached). Make the following changes in 
-the web.config file for Enyim client -
+the web.config file for Enyim client
 ```xml
 <configuration>
 	<configSections>
@@ -60,12 +60,11 @@ the web.config file for Enyim client -
 
 </configuration>
 ```
-### memcached/locator
+#### memcached/locator
 The `memcached/locator` is used to map objects to servers in the pool. Replace the default implementation with the 
 type `MemcachedSessionProvider.BackupEnabledNodeLocator, MemcachedSessionProvider`. This handles the session backup. 
 
-More configuration options for Enyim Memcached can be found here 
-https://github.com/enyim/EnyimMemcached/wiki/MemcachedClient-Configuration
+See here for [more configuration options for Enyim Memcached](https://github.com/enyim/EnyimMemcached/wiki/MemcachedClient-Configuration)
 
 Also make the following change in web.config to use the custom Session State provider
 ```xml
