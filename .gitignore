@@ -1,7 +1,7 @@
 [Oo]bj
 [Bb]in
-deploy
-deploy/*
+packages
 *.user
 *.suo
 *.cache
+*.nupkg
