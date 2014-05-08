@@ -86,4 +86,4 @@ Also make the following change in web.config to use the custom Session State pro
 If you have questions, bugs reports, or feature requests, please submit them via the [Issue Tracker](https://github.com/rohita/MemcachedSessionProvider/issues).
 
 ## Reference
-This implementation based on the [sample provided by Microsoft](http://msdn.microsoft.com/en-us/library/ms178588.aspx).
+This implementation is based on the [sample provided by Microsoft](http://msdn.microsoft.com/en-us/library/ms178588.aspx).
