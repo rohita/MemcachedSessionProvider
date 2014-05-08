@@ -25,10 +25,9 @@ Note that if only 1 memcached node is configured then there is no backup.
 ### No session locking
 [Session locking in ASP.NET](http://msdn.microsoft.com/en-us/library/ms178587.aspx) can cause a few 
 [performance problems](http://stackoverflow.com/questions/3629709/i-just-discovered-why-all-asp-net-websites-are-slow-and-i-am-trying-to-work-out). 
-This custom implementation of Session provider does not lock any Session. If your application is structured in a reasonable way, 
-this should not a problem. If you actually need locked, consistent data as part of the session, you should specifically implement a 
-lock/concurrency check on your own, or use a different Memcached provider (see [here](https://github.com/enyim/memcached-providers) 
-and [here](http://memcachedproviders.codeplex.com/)).
+This custom implementation of Session provider does not lock any Session. This should not be a problem in most cases. But if 
+you need locked, consistent data as part of the session, you can implement a lock/concurrency check in your application, 
+or use a different Memcached provider (see [here](https://github.com/enyim/memcached-providers) and [here](http://memcachedproviders.codeplex.com/)).
 
 ## Requirements
 You'll need .NET Framework 3.5 or later to use the precompiled binaries. To build client, you'll need Visual Studio 2012.
