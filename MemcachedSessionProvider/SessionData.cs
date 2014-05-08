@@ -55,7 +55,10 @@ namespace MemcachedSessionProvider
 
         public SessionStateStoreData Deserialize(HttpContext context)
         {
-            var ms = new MemoryStream(_serializedSessionData);
+            var ms = _serializedSessionData == null 
+                ? new MemoryStream() 
+                : new MemoryStream(_serializedSessionData);
+
             var sessionItems = new SessionStateItemCollection();
 
             if (ms.Length > 0)

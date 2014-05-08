@@ -89,23 +89,5 @@ namespace MemcachedSessionProvider.Tests
             var s = new SessionKeyFormat(null);
             Assert.AreEqual(expected, s.IsPrimaryKey(sessionId));
         }
-
-        [Test]
-        public void ConfigTest()
-        {
-            Console.WriteLine(System.Web.Hosting.HostingEnvironment.ApplicationVirtualPath);
-            Console.WriteLine(HttpRuntime.AppDomainAppId);
-
-            // __AspSession_1:/_5:adfasfdaf
-            //string.Format(CultureInfo.InvariantCulture, "__AspSession_{0}:{1}_{2}:{3}_{4}:{5:x}:{6}:{7}",
-            //    (object)CacheKeyFactory.GetStringLengthForKeyCreation(this._applicationName),
-            //    (object)this._applicationName,
-            //    (object)CacheKeyFactory.GetStringLengthForKeyCreation(sessionId),
-            //    (object)sessionId,
-            //    (object)keyType,
-            //    (object)keyVersion,
-            //    (object)CacheKeyFactory.GetStringLengthForKeyCreation(key),
-            //    (object)key);
-        }
     }
 }
