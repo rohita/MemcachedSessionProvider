@@ -18,7 +18,7 @@ on node `M2`. If node `M1` goes down, session is not lost. It will be retrived f
  S1		  S2
 bak:S2	 bak:S1
 ```
-This is the same way the [Memcached session manager for Tomcat](https://code.google.com/p/memcached-session-manager/) is implemented. 
+This is similar to the way [Memcached session manager for Tomcat](https://code.google.com/p/memcached-session-manager/) is implemented. 
 
 Note that if only 1 memcached node is configured then there is no backup. 
 
