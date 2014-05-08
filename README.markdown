@@ -10,7 +10,7 @@ Features:
 ### Handling node failures
 In a pool of 2 or more memcached nodes, sessions are distributed equally across all the memcached nodes. 
 Also, for every session stored on node `M` a backup copy of that session is stored on the next node `M+1`. For example, in 
-a pool of 2 memcached nodes `M1` and `M2`, if a session `S1` gets stored on memcached node `M1`, the backup session `bak:S1` is stored 
+a pool of 2 memcached nodes, if a session `S1` gets stored on memcached node `M1`, the backup session `bak:S1` is stored 
 on node `M2`. If node `M1` goes down, session is not lost. It will be retrived from the `M2` node. Similarly, `M1` acts as backup node for
 `M2`, in case `M2` goes down. 
 ```
@@ -81,5 +81,9 @@ Also make the following change in web.config to use the custom Session State pro
 
 </configuration>
 ```
+
+## Questions?
+If you have questions, bugs reports, or feature requests, please submit them via the [Issue Tracker](https://github.com/rohita/MemcachedSessionProvider/issues).
+
 ## Reference
 This implementation based on the [sample provided by Microsoft](http://msdn.microsoft.com/en-us/library/ms178588.aspx).
