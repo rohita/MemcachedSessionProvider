@@ -8,18 +8,17 @@ Features:
 * No session locking per request
 
 ### Handling node failures
-In a pool of 2 or more memcached nodes, sessions are distributed equally across all the memcached nodes. 
-Also, for every session stored on node `M` a backup copy of that session is stored on the next node `M+1`. For example, in 
-a pool of 2 memcached nodes, if a session `S1` gets stored on memcached node `M1`, the backup session `bak:S1` is stored 
-on node `M2`. If node `M1` goes down, session is not lost. It will be retrived from the `M2` node. Similarly, `M1` acts as backup node for
-`M2`, in case `M2` goes down. 
+In a pool of memcached nodes, sessions are distributed equally across all the nodes. Additionally, for every session, a backup 
+copy is stored on a secondary memcached node. This is similar to the way [Memcached session manager for Tomcat](https://code.google.com/p/memcached-session-manager/) is implemented.
+
+Example: In  a pool of 2 memcached nodes, if a session `S1` gets stored on memcached node `M1`, the backup session `bak:S1` is stored 
+on node `M2`. If node `M1` goes down, session is not lost. It will be retrived from the `M2` node without any interruption. 
+Similarly, `M1` acts as backup node for `M2`, in case `M2` goes down. 
 ```
 <M1>     <M2>
  S1		  S2
 bak:S2	 bak:S1
 ```
-This is similar to the way [Memcached session manager for Tomcat](https://code.google.com/p/memcached-session-manager/) is implemented. 
-
 Note that if only 1 memcached node is configured then there is no backup. 
 
 ### No session locking
