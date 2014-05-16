@@ -50,7 +50,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BackupEnabledNodeLocatorTests.cs" />
+    <Compile Include="SessionNodeLocatorTests.cs" />
     <Compile Include="SessionCacheWithBackupTests.cs" />
     <Compile Include="SessionDataTests.cs" />
     <Compile Include="SessionKeyFormatTests.cs" />

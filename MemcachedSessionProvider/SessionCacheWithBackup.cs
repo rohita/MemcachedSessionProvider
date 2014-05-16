@@ -20,6 +20,7 @@
 
 using System;
 using System.Configuration;
+using System.Reflection;
 using Enyim.Caching;
 using Enyim.Caching.Configuration;
 using Enyim.Caching.Memcached;
@@ -38,7 +39,7 @@ namespace MemcachedSessionProvider
         {
             _memcachedClientSection = ConfigurationManager.GetSection(DefaultConfigSection) as MemcachedClientSection;
             _client = new MemcachedClient(_memcachedClientSection);
-            _sessionKeyFormat = new SessionKeyFormat(null);
+            _sessionKeyFormat = new SessionKeyFormat();
         }
 
         public static SessionCacheWithBackup Instance 
@@ -54,6 +55,12 @@ namespace MemcachedSessionProvider
             {
                 var backupKey = _sessionKeyFormat.GetBackupKey(sessionId);
                 data = _client.Get<SessionData>(backupKey);
+
+                if (data != null)
+                {
+                    // relocate session
+                    Store(sessionId, data, TimeSpan.FromMinutes(data.Timeout));
+                }
             }
 
             return data; 
@@ -62,15 +69,13 @@ namespace MemcachedSessionProvider
         public void Store(string sessionId, SessionData cacheItem, TimeSpan timeout)
         {
             var cacheKey = _sessionKeyFormat.GetPrimaryKey(sessionId);
+            SessionNodeLocatorImpl.Instance.AssignPrimaryBackupNodes(cacheKey);
             _client.Store(StoreMode.Set, cacheKey, cacheItem, timeout);
-            
+
             if (IsBackupEnabled()) // backup
             {
                 var backupKey = _sessionKeyFormat.GetBackupKey(sessionId);
-                _client.Store(StoreMode.Set, backupKey, cacheItem, timeout); // I initially thought of doing backups asynchronously. 
-                                                                             // But then decided against it, since that reduces 
-                                                                             // the high availability if primary node fails before
-                                                                             // backup completes. 
+                _client.Store(StoreMode.Set, backupKey, cacheItem, timeout);
             }
         }
 
@@ -88,7 +93,7 @@ namespace MemcachedSessionProvider
         private bool IsBackupEnabled()
         {
             return _memcachedClientSection.Servers.Count > 1 
-                && _memcachedClientSection.NodeLocator.Type == typeof (BackupEnabledNodeLocator); 
+                && _memcachedClientSection.NodeLocator.Type == typeof (SessionNodeLocator); 
         }
 
         internal void ResetMemcachedClient(string memcachedConfigSection)

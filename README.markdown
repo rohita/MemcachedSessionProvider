@@ -52,7 +52,7 @@ the web.config file for Enyim client
 				<add address="ip address" port="port number" />
 				<add address="ip address" port="port number" />
 			</servers>
-			<locator type="MemcachedSessionProvider.BackupEnabledNodeLocator, MemcachedSessionProvider" />
+			<locator type="MemcachedSessionProvider.SessionNodeLocator, MemcachedSessionProvider" />
 		</memcached>
 	</enyim.com>
 
@@ -60,7 +60,7 @@ the web.config file for Enyim client
 ```
 #### memcached/locator
 The `memcached/locator` is used to map objects to servers in the pool. Replace the default implementation with the 
-type `MemcachedSessionProvider.BackupEnabledNodeLocator, MemcachedSessionProvider`. This handles the session backup. 
+type `MemcachedSessionProvider.SessionNodeLocator, MemcachedSessionProvider`. This handles the session backup. 
 
 See here for [more configuration options for Enyim Memcached](https://github.com/enyim/EnyimMemcached/wiki/MemcachedClient-Configuration)
 

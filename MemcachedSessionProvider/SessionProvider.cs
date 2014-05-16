@@ -37,12 +37,9 @@ namespace MemcachedSessionProvider
     {
         private TimeSpan _sessionTimeout;
         private readonly SessionCacheWithBackup _sessionCache = SessionCacheWithBackup.Instance;
-
-        public string ApplicationName { get; private set; }
-
+        
         public override void Initialize(string name, System.Collections.Specialized.NameValueCollection config)
         {
-
             if (config == null)
                 throw new ArgumentNullException("config");
 
@@ -59,8 +56,7 @@ namespace MemcachedSessionProvider
             base.Initialize(name, config);
 
             // Get <sessionState> Timeout value
-            Configuration cfg = WebConfigurationManager.OpenWebConfiguration(ApplicationName);
-            var objConfig = (SessionStateSection)cfg.GetSection("system.web/sessionState");
+            var objConfig = (SessionStateSection)WebConfigurationManager.GetSection("system.web/sessionState");
             _sessionTimeout = objConfig.Timeout;
         }
 

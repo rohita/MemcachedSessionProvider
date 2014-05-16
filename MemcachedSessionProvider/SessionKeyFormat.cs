@@ -34,10 +34,13 @@ namespace MemcachedSessionProvider
         private const string BackupPrefix = "bak:";
         private const string Format = "{0}{1}{2}_{3}";
 
+        public SessionKeyFormat()
+        {
+            _applicationName = HttpRuntime.AppDomainAppId;
+        }
+
         public SessionKeyFormat(string applicationName)
         {
-            if (string.IsNullOrEmpty(applicationName))
-                applicationName = HttpRuntime.AppDomainAppId;
             _applicationName = applicationName; 
         }
 
