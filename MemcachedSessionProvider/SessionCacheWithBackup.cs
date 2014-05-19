@@ -99,6 +99,7 @@ namespace MemcachedSessionProvider
         internal void ResetMemcachedClient(string memcachedConfigSection)
         {
             _client.Dispose();
+            SessionNodeLocatorImpl.Instance.ResetAllKeys();
             _memcachedClientSection = ConfigurationManager.GetSection(memcachedConfigSection) as MemcachedClientSection;
             _client = new MemcachedClient(_memcachedClientSection);
         }

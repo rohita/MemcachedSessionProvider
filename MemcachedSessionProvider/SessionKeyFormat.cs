@@ -32,16 +32,23 @@ namespace MemcachedSessionProvider
         private string _applicationName;
         private const string AspSessionPrefix = "__AspSession_"; 
         private const string BackupPrefix = "bak:";
-        private const string Format = "{0}{1}{2}_{3}";
+        private const string Format = "{0}{1}{2}{3}";
 
         public SessionKeyFormat()
         {
-            _applicationName = HttpRuntime.AppDomainAppId;
+            if (!string.IsNullOrEmpty(HttpRuntime.AppDomainAppId))
+            {
+                _applicationName = string.Concat(HttpRuntime.AppDomainAppId, "_");
+            }
+            
         }
 
         public SessionKeyFormat(string applicationName)
         {
-            _applicationName = applicationName; 
+            if (!string.IsNullOrEmpty(applicationName))
+            {
+                _applicationName = string.Concat(applicationName, "_");
+            } 
         }
 
         public String GetBackupKey(String key)

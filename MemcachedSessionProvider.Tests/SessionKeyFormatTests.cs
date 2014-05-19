@@ -22,9 +22,9 @@ namespace MemcachedSessionProvider.Tests
             Assert.AreEqual(expected, s.GetBackupKey(sessionId));
         }
 
-        [TestCase("bak:__AspSession__35c30248-2cdd-4a34-ac18-4749aeeb350b", "35c30248-2cdd-4a34-ac18-4749aeeb350b")]
+        [TestCase("bak:__AspSession_35c30248-2cdd-4a34-ac18-4749aeeb350b", "35c30248-2cdd-4a34-ac18-4749aeeb350b")]
         [TestCase("bak:__AspSession__abcd456", "__AspSession__abcd456")]
-        [TestCase("bak:__AspSession__", "")]
+        [TestCase("bak:__AspSession_", "")]
         public void TestGetBackupKey2(string expected, string sessionId)
         {
             var s = new SessionKeyFormat(null);
@@ -43,13 +43,20 @@ namespace MemcachedSessionProvider.Tests
         }
 
         [TestCase("__AspSession_testapp_abcd456", "bak:__AspSession_testapp_abcd456")]
-        [TestCase("__AspSession__35c30248-2cdd-4a34-ac18-4749aeeb350b", "35c30248-2cdd-4a34-ac18-4749aeeb350b")]
+        [TestCase("__AspSession_35c30248-2cdd-4a34-ac18-4749aeeb350b", "35c30248-2cdd-4a34-ac18-4749aeeb350b")]
         [TestCase("__AspSession_testapp_abcd456", "__AspSession_testapp_abcd456")]
-        [TestCase("__AspSession__", "")]
+        [TestCase("__AspSession_", "")]
         [TestCase("__AspSession__abcd456", "__AspSession__abcd456")]
         public void TestGetPrimaryKey2(string expected, string sessionId)
         {
             var s = new SessionKeyFormat("");
+            Assert.AreEqual(expected, s.GetPrimaryKey(sessionId));
+        }
+
+        [TestCase("__AspSession_/LM/W3SVC/1/ROOT/ApexUI_02l2seqes0hrgaffs5hgfg55", "/LM/W3SVC/1/ROOT/ApexUI_02l2seqes0hrgaffs5hgfg55")]
+        public void TestGetPrimaryKey3(string expected, string sessionId)
+        {
+            var s = new SessionKeyFormat(null);
             Assert.AreEqual(expected, s.GetPrimaryKey(sessionId));
         }
 

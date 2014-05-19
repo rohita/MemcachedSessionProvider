@@ -72,9 +72,14 @@ namespace MemcachedSessionProvider
                 if (_keys == null)
                 {
                     BuildIndex();
+                    BuildMasterPrimaryAndBackup();
+                }
+                else
+                {
+                    ReBuildMaster();
                 }
 
-                BuildMaster();
+                
             }
             finally
             {
@@ -103,6 +108,15 @@ namespace MemcachedSessionProvider
 
             try { PerformNodeAssignment(key); }
             finally { _serverAccessLock.ExitReadLock(); }
+        }
+
+        internal void ResetAllKeys()
+        {
+            _keys = null;
+            _masterKeys.Clear();
+            _keyToServer.Clear();
+            _keyToBackup.Clear();
+            _allServers.Clear();
         }
 
         private IMemcachedNode PerformLocate(string key)
@@ -249,7 +263,33 @@ namespace MemcachedSessionProvider
             return k;
         }
 
-        private void BuildMaster()
+        private void BuildMasterPrimaryAndBackup()
+        {
+            _masterKeys.Clear();
+            _keyToServer.Clear();
+            _keyToBackup.Clear();
+
+            int numNodes = _allServers.Count;
+            if (numNodes == 0)
+            {
+                return;
+            }
+
+            int keysPerServer = _keys.Length / numNodes;
+            for (int i = 0; i < numNodes; i++)
+            {
+                int start = i * keysPerServer;
+                int end = (i == numNodes - 1) ? _keys.Length : start + keysPerServer;
+                for (int j = start; j < end; j++)
+                {
+                    _masterKeys[_keys[j]] = _allServers[i];
+                    _keyToServer[_keys[j]] = _allServers[i];
+                    _keyToBackup[_keys[j]] = FindNextNodeForBackup(_allServers[i]);
+                }
+            }
+        }
+
+        private void ReBuildMaster()
         {
             _masterKeys.Clear();
 

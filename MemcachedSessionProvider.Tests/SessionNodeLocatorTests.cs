@@ -283,6 +283,29 @@ namespace MemcachedSessionProvider.Tests
         }
 
         [Test]
+        public void TestNodeWithAppRestart()
+        {
+            var n1 = GetNode(1);
+            var n2 = GetNode(2);
+            var n3 = GetNode(3);
+            var n4 = GetNode(4);
+            locator.Initialize(new List<IMemcachedNode> { n1, n2, n3, n4 });
+            SessionNodeLocatorImpl.Instance.AssignPrimaryBackupNodes(N1Key); //save N1Key
+
+            var primary = locator.Locate(N1Key);
+            var backup = locator.Locate(BackupPrefix + N1Key);
+            Assert.AreEqual(n1.EndPoint, primary.EndPoint);
+            Assert.AreEqual(n2.EndPoint, backup.EndPoint);
+
+            SessionNodeLocatorImpl.Instance.ResetAllKeys(); // client app went down
+            locator.Initialize(new List<IMemcachedNode> { n1, n2, n3, n4 });
+            primary = locator.Locate(N1Key);
+            backup = locator.Locate(BackupPrefix + N1Key);
+            Assert.AreEqual(n1.EndPoint, primary.EndPoint);
+            Assert.AreEqual(n2.EndPoint, backup.EndPoint);
+        }
+
+        [Test]
         public void Test2()
         {
             Assert.IsNull(default(SessionData));
