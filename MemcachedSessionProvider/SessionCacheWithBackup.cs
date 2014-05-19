@@ -32,7 +32,7 @@ namespace MemcachedSessionProvider
         private static readonly SessionCacheWithBackup _instance = new SessionCacheWithBackup();
         private MemcachedClient _client;
         private SessionKeyFormat _sessionKeyFormat;
-        private const string DefaultConfigSection = "enyim.com/memcached";
+        private const string DefaultConfigSection = "sessionManagement/memcached";
         private MemcachedClientSection _memcachedClientSection;
 
         private SessionCacheWithBackup()

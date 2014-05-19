@@ -19,7 +19,7 @@ namespace MemcachedSessionProvider.Tests
         [Test]
         public void StoreSessionTest()
         {
-            cache.ResetMemcachedClient("enyim.com/memcached");
+            cache.ResetMemcachedClient("sessionManagement/memcached");
 
             cache.Store(SessionId, new SessionData(SessionStateActions.None, 30), TimeSpan.FromMinutes(30));
 
@@ -35,7 +35,7 @@ namespace MemcachedSessionProvider.Tests
         [Test]
         public void RemoveSessionTest()
         {
-            cache.ResetMemcachedClient("enyim.com/memcached");
+            cache.ResetMemcachedClient("sessionManagement/memcached");
 
             cache.Store(SessionId, new SessionData(SessionStateActions.None, 30), TimeSpan.FromMinutes(30));
 

@@ -40,12 +40,12 @@ the web.config file for Enyim client
 ```xml
 <configuration>
 	<configSections>
-		<sectionGroup name="enyim.com">
+		<sectionGroup name="sessionManagement">
 			<section name="memcached" type="Enyim.Caching.Configuration.MemcachedClientSection, Enyim.Caching" />
 		</sectionGroup>
 	</configSections>
 
-	<enyim.com>
+	<sessionManagement>
 		<memcached protocol="Binary">
 			<servers>
 				<!-- make sure you use the same ordering of nodes in every configuration you have -->
