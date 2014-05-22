@@ -17,13 +17,13 @@ namespace MemcachedSessionProvider.Tests
         private const string BackupPrefix = "bak:"; 
 
         ISocketPoolConfiguration s = new SocketPoolConfiguration();
-        private IMemcachedNodeLocator locator;
+        private SessionNodeLocator locator;
             
         [SetUp]
         public void Setup()
         {
             locator = new SessionNodeLocator(); 
-
+            locator.Reset();
         }
 
         [Test]
@@ -32,7 +32,6 @@ namespace MemcachedSessionProvider.Tests
             var n1 = GetNode(1);
             locator.Initialize(new List<IMemcachedNode> {n1});
 
-            SessionNodeLocatorImpl.Instance.AssignPrimaryBackupNodes(N1Key);
 
             var primary = locator.Locate(N1Key);
             Assert.AreEqual(n1.EndPoint, primary.EndPoint);
@@ -46,7 +45,6 @@ namespace MemcachedSessionProvider.Tests
         {
             var n1 = GetNode(1);
             locator.Initialize(new List<IMemcachedNode> { n1 });
-            SessionNodeLocatorImpl.Instance.AssignPrimaryBackupNodes(N1Key);
 
             SetNodeDead(n1, new List<IMemcachedNode>());
 
@@ -63,7 +61,6 @@ namespace MemcachedSessionProvider.Tests
             var n1 = GetNode(1);
             var n2 = GetNode(2);
             locator.Initialize(new List<IMemcachedNode> { n1, n2 });
-            SessionNodeLocatorImpl.Instance.AssignPrimaryBackupNodes(N1Key);
 
             var primary = locator.Locate(N1Key);
             Assert.AreEqual(n1.EndPoint, primary.EndPoint);
@@ -78,7 +75,6 @@ namespace MemcachedSessionProvider.Tests
             var n1 = GetNode(1);
             var n2 = GetNode(2);
             locator.Initialize(new List<IMemcachedNode> { n1, n2 });
-            SessionNodeLocatorImpl.Instance.AssignPrimaryBackupNodes(N2Key2Node);
 
             var primary = locator.Locate(N2Key2Node);
             Assert.AreEqual(n2.EndPoint, primary.EndPoint);
@@ -93,7 +89,6 @@ namespace MemcachedSessionProvider.Tests
             var n1 = GetNode(1);
             var n2 = GetNode(2);
             locator.Initialize(new List<IMemcachedNode> { n1, n2 });
-            SessionNodeLocatorImpl.Instance.AssignPrimaryBackupNodes(N1Key);
 
             SetNodeDead(n1, new List<IMemcachedNode>{n2});
 
@@ -110,7 +105,6 @@ namespace MemcachedSessionProvider.Tests
             var n1 = GetNode(1);
             var n2 = GetNode(2);
             locator.Initialize(new List<IMemcachedNode> { n1, n2 });
-            SessionNodeLocatorImpl.Instance.AssignPrimaryBackupNodes(N1Key);
             
             SetNodeDead(n1, new List<IMemcachedNode> { n2 });
 
@@ -118,7 +112,7 @@ namespace MemcachedSessionProvider.Tests
             Assert.AreEqual(n2.EndPoint, backup.EndPoint);
 
             // now primary moves
-            SessionNodeLocatorImpl.Instance.AssignPrimaryBackupNodes(N1Key);
+            locator.AssignPrimaryBackupNodes(N1Key);
 
             var primary = locator.Locate(N1Key);
             Assert.AreEqual(n2.EndPoint, primary.EndPoint);
@@ -134,7 +128,6 @@ namespace MemcachedSessionProvider.Tests
             var n1 = GetNode(1);
             var n2 = GetNode(2);
             locator.Initialize(new List<IMemcachedNode> { n1, n2 });
-            SessionNodeLocatorImpl.Instance.AssignPrimaryBackupNodes(N2Key);
 
             SetNodeDead(n2, new List<IMemcachedNode>{n1});
 
@@ -151,7 +144,6 @@ namespace MemcachedSessionProvider.Tests
             var n1 = GetNode(1);
             var n2 = GetNode(2);
             locator.Initialize(new List<IMemcachedNode> { n1, n2 });
-            SessionNodeLocatorImpl.Instance.AssignPrimaryBackupNodes(N2Key);
 
             SetNodeDead(n1, new List<IMemcachedNode>{n2});
             SetNodeDead(n2, new List<IMemcachedNode>());
@@ -170,7 +162,6 @@ namespace MemcachedSessionProvider.Tests
             var n2 = GetNode(2);
             var n3 = GetNode(3);
             locator.Initialize(new List<IMemcachedNode> { n1, n2, n3 });
-            SessionNodeLocatorImpl.Instance.AssignPrimaryBackupNodes(N2Key);
 
             var primary = locator.Locate(N2Key);
             Assert.AreEqual(n2.EndPoint, primary.EndPoint);
@@ -186,14 +177,13 @@ namespace MemcachedSessionProvider.Tests
             var n2 = GetNode(2);
             var n3 = GetNode(3);
             locator.Initialize(new List<IMemcachedNode> { n1, n2, n3 });
-            SessionNodeLocatorImpl.Instance.AssignPrimaryBackupNodes(N2Key2Node);
 
             SetNodeDead(n3, new List<IMemcachedNode>{n1, n2});
 
             var backup = locator.Locate(BackupPrefix + N2Key2Node);
             Assert.IsNull(backup);
 
-            SessionNodeLocatorImpl.Instance.AssignPrimaryBackupNodes(N2Key2Node);
+            locator.AssignPrimaryBackupNodes(N2Key2Node);
 
             backup = locator.Locate(BackupPrefix + N2Key2Node);
             Assert.AreEqual(n1.EndPoint, backup.EndPoint, "Backup skips dead nodes");
@@ -207,7 +197,6 @@ namespace MemcachedSessionProvider.Tests
             var n3 = GetNode(3);
             var n4 = GetNode(4); 
             locator.Initialize(new List<IMemcachedNode> { n1, n2, n3, n4 });
-            SessionNodeLocatorImpl.Instance.AssignPrimaryBackupNodes(N1Key);
 
             var backup = locator.Locate(BackupPrefix + N1Key);
             Assert.AreEqual(n2.EndPoint, backup.EndPoint, "Backup on next node");
@@ -226,7 +215,6 @@ namespace MemcachedSessionProvider.Tests
             var n3 = GetNode(3);
             var n4 = GetNode(4);
             locator.Initialize(new List<IMemcachedNode> { n1, n2, n3, n4 });
-            SessionNodeLocatorImpl.Instance.AssignPrimaryBackupNodes(N1Key);
             
             SetNodeDead(n1, new List<IMemcachedNode> { n2, n3, n4 });
 
@@ -235,7 +223,7 @@ namespace MemcachedSessionProvider.Tests
             Assert.IsNull(primary);
             Assert.AreEqual(n2.EndPoint, backup.EndPoint, "After primary node failure, don't move the backup node");
 
-            SessionNodeLocatorImpl.Instance.AssignPrimaryBackupNodes(N1Key);
+            locator.AssignPrimaryBackupNodes(N1Key);
             primary = locator.Locate(N1Key);
             backup = locator.Locate(BackupPrefix + N1Key);
             Assert.AreEqual(n2.EndPoint, primary.EndPoint);
@@ -250,7 +238,6 @@ namespace MemcachedSessionProvider.Tests
             var n3 = GetNode(3);
             var n4 = GetNode(4);
             locator.Initialize(new List<IMemcachedNode> { n1, n2, n3, n4 });
-            SessionNodeLocatorImpl.Instance.AssignPrimaryBackupNodes(N1Key);
 
             SetNodeDead(n1, new List<IMemcachedNode> { n2, n3, n4 });
 
@@ -259,7 +246,7 @@ namespace MemcachedSessionProvider.Tests
             Assert.IsNull(primary);
             Assert.AreEqual(n2.EndPoint, backup.EndPoint, "After primary node failure, don't move the backup node");
 
-            SessionNodeLocatorImpl.Instance.AssignPrimaryBackupNodes(N1Key);
+            locator.AssignPrimaryBackupNodes(N1Key);
             primary = locator.Locate(N1Key);
             backup = locator.Locate(BackupPrefix + N1Key);
             Assert.AreEqual(n2.EndPoint, primary.EndPoint);
@@ -274,7 +261,7 @@ namespace MemcachedSessionProvider.Tests
             Assert.AreEqual(n3.EndPoint, backup.EndPoint);
 
             // Reassign
-            SessionNodeLocatorImpl.Instance.AssignPrimaryBackupNodes(N1Key);
+            locator.AssignPrimaryBackupNodes(N1Key);
             primary = locator.Locate(N1Key);
             backup = locator.Locate(BackupPrefix + N1Key);
             Assert.AreEqual(n1.EndPoint, primary.EndPoint);
@@ -290,29 +277,19 @@ namespace MemcachedSessionProvider.Tests
             var n3 = GetNode(3);
             var n4 = GetNode(4);
             locator.Initialize(new List<IMemcachedNode> { n1, n2, n3, n4 });
-            SessionNodeLocatorImpl.Instance.AssignPrimaryBackupNodes(N1Key); //save N1Key
 
             var primary = locator.Locate(N1Key);
             var backup = locator.Locate(BackupPrefix + N1Key);
             Assert.AreEqual(n1.EndPoint, primary.EndPoint);
             Assert.AreEqual(n2.EndPoint, backup.EndPoint);
 
-            SessionNodeLocatorImpl.Instance.ResetAllKeys(); // client app went down
+            locator.Reset(); // client app went down
             locator.Initialize(new List<IMemcachedNode> { n1, n2, n3, n4 });
             primary = locator.Locate(N1Key);
             backup = locator.Locate(BackupPrefix + N1Key);
             Assert.AreEqual(n1.EndPoint, primary.EndPoint);
             Assert.AreEqual(n2.EndPoint, backup.EndPoint);
         }
-
-        [Test]
-        public void Test2()
-        {
-            Assert.IsNull(default(SessionData));
-            Console.WriteLine(default(SessionData));
-        }
-
-
 
         private IMemcachedNode GetNode(int num)
         {

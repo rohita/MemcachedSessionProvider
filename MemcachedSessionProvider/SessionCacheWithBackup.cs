@@ -19,26 +19,30 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Reflection;
+using System.Threading;
 using Enyim.Caching;
 using Enyim.Caching.Configuration;
 using Enyim.Caching.Memcached;
 
 namespace MemcachedSessionProvider
 {
-    internal class SessionCacheWithBackup
+    internal sealed class SessionCacheWithBackup
     {
         private static readonly SessionCacheWithBackup _instance = new SessionCacheWithBackup();
-        private MemcachedClient _client;
+        private volatile IMemcachedClient _client;
         private SessionKeyFormat _sessionKeyFormat;
         private const string DefaultConfigSection = "sessionManagement/memcached";
         private MemcachedClientSection _memcachedClientSection;
+        private SessionNodeLocatorImpl _locatorImpl;
+        private object _clientAccessLock = new object();
 
         private SessionCacheWithBackup()
         {
             _memcachedClientSection = ConfigurationManager.GetSection(DefaultConfigSection) as MemcachedClientSection;
-            _client = new MemcachedClient(_memcachedClientSection);
+            _locatorImpl = new SessionNodeLocatorImpl();
             _sessionKeyFormat = new SessionKeyFormat();
         }
 
@@ -47,29 +51,74 @@ namespace MemcachedSessionProvider
             get { return _instance; }            
         }
 
+        public void InitializeClient()
+        {
+            if (_client != null) return;
+
+            lock (_clientAccessLock)
+            {
+                if (_client == null)
+                    _client = new MemcachedClient(_memcachedClientSection);
+            }
+        }
+
         public SessionData Get(string sessionId)
         {
             var cacheKey = _sessionKeyFormat.GetPrimaryKey(sessionId);
             var data = _client.Get<SessionData>(cacheKey);
-            if (data == null && IsBackupEnabled()) // try backup
+
+            if (data != null)
+            {
+                // Check if a new primary was assigned
+                data = CheckForNewer(sessionId, data);
+            }
+            else if (IsBackupEnabled()) // try backup
             {
                 var backupKey = _sessionKeyFormat.GetBackupKey(sessionId);
                 data = _client.Get<SessionData>(backupKey);
 
-                if (data != null)
+                if (data != null)  
                 {
-                    // relocate session
-                    Store(sessionId, data, TimeSpan.FromMinutes(data.Timeout));
+                    // Data found on backup node. This means primary is down.
+                    // Check on new primary
+                    data = CheckForNewer(sessionId, data);
                 }
             }
 
             return data; 
         }
 
+        private SessionData CheckForNewer(string sessionId, SessionData data)
+        {
+            string cacheKey = _sessionKeyFormat.GetPrimaryKey(sessionId);
+
+            // try if there is fresher copy
+            // This happens when a node goes up or down
+            if (AssignPrimaryBackupNodes(cacheKey))
+            {
+                var newData = _client.Get<SessionData>(cacheKey);
+                if (newData == null || data.SavedAt > newData.SavedAt)
+                {
+                    // If not found or older, that means this client hit the key first
+                    // so relocate session for next call
+                    Store(sessionId, data, TimeSpan.FromMinutes(data.Timeout));
+                }
+                else
+                {
+                    // else found newer, that means some other client already updated this
+                    data = newData;
+                }
+            }
+
+            return data;
+        }
+
         public void Store(string sessionId, SessionData cacheItem, TimeSpan timeout)
         {
             var cacheKey = _sessionKeyFormat.GetPrimaryKey(sessionId);
-            SessionNodeLocatorImpl.Instance.AssignPrimaryBackupNodes(cacheKey);
+            AssignPrimaryBackupNodes(cacheKey);
+
+            cacheItem.SavedAt = DateTime.UtcNow.Ticks;
             _client.Store(StoreMode.Set, cacheKey, cacheItem, timeout);
 
             if (IsBackupEnabled()) // backup
@@ -90,18 +139,65 @@ namespace MemcachedSessionProvider
             }
         }
 
+        public void InitializeLocator(IList<IMemcachedNode> nodes)
+        {
+            _locatorImpl.Initialize(nodes);
+        }
+
+        public IMemcachedNode Locate(string key)
+        {
+            return _locatorImpl.Locate(key);
+        }
+
+        public IEnumerable<IMemcachedNode> GetWorkingNodes()
+        {
+            return _locatorImpl.GetWorkingNodes();
+        } 
+
         private bool IsBackupEnabled()
         {
-            return _memcachedClientSection.Servers.Count > 1 
-                && _memcachedClientSection.NodeLocator.Type == typeof (SessionNodeLocator); 
+            return _memcachedClientSection.Servers.Count > 1
+                && IsUsingSessionNodeLocator(); 
         }
+
+        private bool IsUsingSessionNodeLocator()
+        {
+            return _memcachedClientSection.NodeLocator.Type == typeof (SessionNodeLocator);
+        }
+
+        public bool AssignPrimaryBackupNodes(string cacheKey)
+        {
+            if (IsUsingSessionNodeLocator())
+            {
+                return _locatorImpl.AssignPrimaryBackupNodes(cacheKey);
+            }
+
+            return false; 
+        }
+
 
         internal void ResetMemcachedClient(string memcachedConfigSection)
         {
-            _client.Dispose();
-            SessionNodeLocatorImpl.Instance.ResetAllKeys();
+            if (_client != null)
+            {
+                _client.Dispose();
+                _client = null; 
+            }
+            _locatorImpl = new SessionNodeLocatorImpl();
             _memcachedClientSection = ConfigurationManager.GetSection(memcachedConfigSection) as MemcachedClientSection;
-            _client = new MemcachedClient(_memcachedClientSection);
+            InitializeClient();
+        }
+
+        internal void ResetMemcachedClient(IMemcachedClient newClient, SessionNodeLocatorImpl newLocator)
+        {
+            if (_client != null) _client.Dispose();
+            _client = newClient;
+            _locatorImpl = newLocator ?? _locatorImpl; 
+        }
+
+        internal void ResetLocator()
+        {
+            _locatorImpl = new SessionNodeLocatorImpl();
         }
 
         internal SessionData GetByCacheKey(string key)

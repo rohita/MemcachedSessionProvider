@@ -31,8 +31,6 @@ namespace MemcachedSessionProvider
 {
     internal class SessionNodeLocatorImpl
     {
-        private static readonly SessionNodeLocatorImpl _instance = new SessionNodeLocatorImpl();
-
         private const int ServerAddressMutations = 100;
 
         // holds all server keys for mapping an item key to the server consistently
@@ -46,7 +44,7 @@ namespace MemcachedSessionProvider
         private ReaderWriterLockSlim _serverAccessLock;
         private SessionKeyFormat _sessionKeyFormat;
 
-        private SessionNodeLocatorImpl()
+        public SessionNodeLocatorImpl()
         {
             _masterKeys = new Dictionary<uint, IMemcachedNode>(new UIntEqualityComparer());
             _keyToServer = new Dictionary<uint, IMemcachedNode>(new UIntEqualityComparer());
@@ -54,11 +52,6 @@ namespace MemcachedSessionProvider
             _allServers = new List<IMemcachedNode>();
             _serverAccessLock = new ReaderWriterLockSlim();
             _sessionKeyFormat = new SessionKeyFormat();
-        }
-
-        public static SessionNodeLocatorImpl Instance
-        {
-            get { return _instance; }
         }
 
         public void Initialize(IList<IMemcachedNode> nodes)
@@ -102,21 +95,12 @@ namespace MemcachedSessionProvider
             return _allServers;
         }
 
-        public void AssignPrimaryBackupNodes(string key)
+        public bool AssignPrimaryBackupNodes(string key)
         {
-            _serverAccessLock.EnterReadLock();
+            _serverAccessLock.EnterUpgradeableReadLock();
 
-            try { PerformNodeAssignment(key); }
-            finally { _serverAccessLock.ExitReadLock(); }
-        }
-
-        internal void ResetAllKeys()
-        {
-            _keys = null;
-            _masterKeys.Clear();
-            _keyToServer.Clear();
-            _keyToBackup.Clear();
-            _allServers.Clear();
+            try { return PerformNodeAssignment(key); }
+            finally { _serverAccessLock.ExitUpgradeableReadLock(); }
         }
 
         private IMemcachedNode PerformLocate(string key)
@@ -144,18 +128,31 @@ namespace MemcachedSessionProvider
             return null; 
         }
 
-        private void PerformNodeAssignment(string key)
+        private bool PerformNodeAssignment(string key)
         {
             uint? itemKeyHash = GetPrimaryKeyHash(key);
-            if (itemKeyHash == null || _allServers.Count == 0)
+            if (itemKeyHash == null 
+                || _allServers.Count == 0
+                || !_masterKeys.ContainsKey(itemKeyHash.Value))
             {
-                return;
+                return false;
             }
 
-            var node = _masterKeys.ContainsKey(itemKeyHash.Value) ? _masterKeys[itemKeyHash.Value] : null;
-            _keyToServer[itemKeyHash.Value] = node;
+            var node = _masterKeys[itemKeyHash.Value];
             var backupNode = FindNextNodeForBackup(node);
-            _keyToBackup[itemKeyHash.Value] = backupNode;
+
+            bool locationChanged = NotEqual(node, _keyToServer[itemKeyHash.Value])
+                                || NotEqual(backupNode, _keyToBackup[itemKeyHash.Value]);
+
+            if (locationChanged)
+            {
+                _serverAccessLock.EnterWriteLock();
+                _keyToServer[itemKeyHash.Value] = node;
+                _keyToBackup[itemKeyHash.Value] = backupNode;
+                _serverAccessLock.ExitWriteLock();
+            }
+
+            return locationChanged; 
         }
 
         private uint? GetPrimaryKeyHash(string rawKey)
@@ -309,6 +306,21 @@ namespace MemcachedSessionProvider
                     _masterKeys[_keys[j]] = _allServers[i];
                 }
             }
+        }
+
+        private bool NotEqual(IMemcachedNode first, IMemcachedNode second)
+        {
+            if (first == null && second == null)
+            {
+                return false; 
+            }
+
+            if (first == null || second == null)
+            {
+                return true;
+            }
+
+            return !first.EndPoint.Equals(second.EndPoint);
         }
     }
 }

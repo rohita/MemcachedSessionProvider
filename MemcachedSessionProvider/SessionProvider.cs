@@ -58,6 +58,8 @@ namespace MemcachedSessionProvider
             // Get <sessionState> Timeout value
             var objConfig = (SessionStateSection)WebConfigurationManager.GetSection("system.web/sessionState");
             _sessionTimeout = objConfig.Timeout;
+
+            _sessionCache.InitializeClient();
         }
 
         /// <summary>

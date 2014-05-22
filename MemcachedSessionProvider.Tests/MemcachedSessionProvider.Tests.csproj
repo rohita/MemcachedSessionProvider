@@ -50,6 +50,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MockMemcachedClient.cs" />
+    <Compile Include="SessionBackupTests.cs" />
     <Compile Include="SessionNodeLocatorTests.cs" />
     <Compile Include="SessionCacheWithBackupTests.cs" />
     <Compile Include="SessionDataTests.cs" />

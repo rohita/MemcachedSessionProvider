@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
+using Enyim.Caching.Memcached;
 using NUnit.Framework;
 using System.Web.SessionState;
 
@@ -11,15 +13,17 @@ namespace MemcachedSessionProvider.Tests
     public class SessionCacheWithBackupTests
     {
         private SessionCacheWithBackup cache = SessionCacheWithBackup.Instance;
-        private SessionKeyFormat _format = new SessionKeyFormat(null);
         private const string SessionId = "abc";
         private string _primaryKey = new SessionKeyFormat(null).GetPrimaryKey(SessionId);
         private string _backupKey = new SessionKeyFormat(null).GetBackupKey(SessionId); 
+
+        
 
         [Test]
         public void StoreSessionTest()
         {
             cache.ResetMemcachedClient("sessionManagement/memcached");
+            cache.Remove(SessionId);
 
             cache.Store(SessionId, new SessionData(SessionStateActions.None, 30), TimeSpan.FromMinutes(30));
 
@@ -28,6 +32,12 @@ namespace MemcachedSessionProvider.Tests
 
             var data2 = cache.GetByCacheKey(_backupKey);
             Assert.NotNull(data2);
+
+            var firstStore = data.SavedAt;
+            cache.Store(SessionId, data, TimeSpan.FromMinutes(30));
+            data = cache.GetByCacheKey(_primaryKey);
+            var secondStore = data.SavedAt;
+            Assert.Greater(secondStore, firstStore);
 
             cache.Remove(SessionId);
         }
@@ -83,5 +93,6 @@ namespace MemcachedSessionProvider.Tests
             cache.Remove(SessionId);
 
         }
+
     }
 }

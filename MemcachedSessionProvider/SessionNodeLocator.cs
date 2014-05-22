@@ -31,19 +31,29 @@ namespace MemcachedSessionProvider
     internal class SessionNodeLocator : IMemcachedNodeLocator
     {
 
-        void IMemcachedNodeLocator.Initialize(IList<IMemcachedNode> nodes)
+        public void Initialize(IList<IMemcachedNode> nodes)
         {
-            SessionNodeLocatorImpl.Instance.Initialize(nodes);
+            SessionCacheWithBackup.Instance.InitializeLocator(nodes);
         }
 
-        IMemcachedNode IMemcachedNodeLocator.Locate(string key)
+        public IMemcachedNode Locate(string key)
         {
-            return SessionNodeLocatorImpl.Instance.Locate(key);
+            return SessionCacheWithBackup.Instance.Locate(key);
         }
 
-        IEnumerable<IMemcachedNode> IMemcachedNodeLocator.GetWorkingNodes()
+        public IEnumerable<IMemcachedNode> GetWorkingNodes()
         {
-            return SessionNodeLocatorImpl.Instance.GetWorkingNodes();
+            return SessionCacheWithBackup.Instance.GetWorkingNodes();
+        }
+
+        internal void AssignPrimaryBackupNodes(string key)
+        {
+            SessionCacheWithBackup.Instance.AssignPrimaryBackupNodes(key); 
+        }
+
+        internal void Reset()
+        {
+            SessionCacheWithBackup.Instance.ResetLocator(); 
         }
         
     }

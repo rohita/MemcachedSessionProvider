@@ -32,7 +32,8 @@ namespace MemcachedSessionProvider
         private readonly int _timeout; 
         private byte[] _serializedSessionData;
 
-        public int Timeout { get { return _timeout; } } 
+        public int Timeout { get { return _timeout; } }
+        public long SavedAt { get; set; }
    
         public SessionData(SessionStateActions actionFlag, int timeout)
         {
